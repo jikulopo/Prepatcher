@@ -14,9 +14,9 @@
   <ItemGroup>
 
     <!-- Nuget dependencies -->
-    <PackageReference Include="Krafs.Publicizer" Version="2.1.0" />
-    <PackageReference Include="Lib.Harmony" Version="2.2.2" ExcludeAssets="runtime" />
-    <PackageReference Include="Krafs.Rimworld.Ref" Version="1.4.3580" />
+    <PackageReference Include="Krafs.Publicizer" Version="2.*" />
+    <PackageReference Include="Lib.Harmony" Version="2.*" ExcludeAssets="runtime" />
+    <PackageReference Include="Krafs.Rimworld.Ref" Version="1.6.*" />
 
   </ItemGroup>
 
