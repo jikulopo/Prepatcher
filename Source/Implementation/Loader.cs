@@ -2,6 +2,7 @@
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using DataAssembly;
 using HarmonyLib;
 using LudeonTK;
 using Prepatcher.Process;
@@ -109,6 +110,10 @@ internal static class Loader
             newAsm = loadedAssembly;
             AppDomain.CurrentDomain.AssemblyResolve += (_, _) => loadedAssembly;
         }
+
+        DataStore.assemblies.Add(asm.SourceAssembly!.Location,loadedAssembly);
+        Lg.Info(asm.SourceAssembly!.Location);
+
 
         if (GenCommandLine.TryGetCommandLineArg("dumpasms", out var path) && !path.Trim().NullOrEmpty())
         {

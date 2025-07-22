@@ -43,6 +43,11 @@ internal partial class FieldAdder
 
         var initializerMethodName = (string)attribute.ConstructorArguments.First().Value;
         var initializer = accessor.DeclaringType.FindMethod(initializerMethodName);
+        if (initializer == null)
+        {
+            Lg.Error($"accessor: {accessor} has found no method with name: {initializerMethodName}");
+            return;
+        }
 
         ReplaceRetsInCtors(newField.DeclaringType, () => new []
         {
