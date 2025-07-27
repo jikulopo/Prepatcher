@@ -24,6 +24,11 @@ public static class AssemblyLoadingFreePatch
     public static Assembly LoadFile(string filePath)
     {
         //FileLog.Log($"loadFile path: {filePath}");
+        if (DataStore.duplicateAssemblies.TryGetValue(filePath, out string? assemblyPath))
+        {
+            //FileLog.Log($"Loading assembly from redirected: {filePath} -> {assemblyPath}");
+            filePath=assemblyPath;
+        }
 
         if (DataStore.assemblies.TryGetValue(filePath, out Assembly? loadedAssembly))
         {

@@ -9,7 +9,7 @@ namespace Prepatcher.Process;
 public class AssemblySet
 {
     internal List<ModifiableAssembly> AllAssemblies { get; } = new();
-    private Dictionary<string, ModifiableAssembly> nameToAsm = new();
+    public Dictionary<string, ModifiableAssembly> nameToAsm = new();
     private IAssemblyResolver Resolver { get; }
 
     public AssemblySet()

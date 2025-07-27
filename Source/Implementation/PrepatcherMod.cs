@@ -31,7 +31,7 @@ internal class PrepatcherMod : Mod
                 Lg.Verbose($"ReflectionOnlyAssemblyResolve: {args.RequestingAssembly} requested {args.Name}");
                 return null;
             };
-
+            FixWorldCameraPatch.PrefixCheckActivateWorldCamera();
             Lg.Info($"Restarted with the patched assembly, going silent.");
             return;
         }

@@ -62,14 +62,37 @@ internal static class Loader
             addedAsm.AllowPatches = false;
         }
 
-        foreach (var (modName, friendlyName, asm) in AssemblyCollector.ModAssemblies())
+        foreach (var (mod, friendlyName, asm) in AssemblyCollector.ModAssemblies())
         {
             var name = asm.GetName().Name;
 
             // Don't add system assemblies packaged by mods
-            if (set.HasAssembly(name)) continue;
+            if (set.HasAssembly(name))
+            {
+                var files = ModContentPack.GetAllFilesForModPreserveOrder(mod, "Assemblies/", (string e) => e.ToLower() == ".dll",
+                    null).Select(f => f.Item2.ToString());
+                //Lg.Info(files.Join());
+                //Lg.Info(mod.assemblies.loadedAssemblies.Select(ass => ass.Location).Join());
+                if(!files.Contains(asm.Location))
+                {
+                    //Lg.Info($"Detected duplicate assembly: {asm.Location}");
 
-            var addedAsm = set.AddAssembly(modName, friendlyName, null, asm);
+                    if (files.Count() == mod.assemblies.loadedAssemblies.Count)
+                    {
+                        var merged = files.Zip(mod.assemblies.loadedAssemblies,
+                            (x, y) => new Tuple<string, string>(x, y.Location));
+                        var i = mod.assemblies.loadedAssemblies.FindIndex(x => x.Location == asm.Location);
+                        if (i != -1)
+                        {
+                            DataStore.duplicateAssemblies[files.ElementAt(i)] = asm.Location;
+                            Lg.Info($"Registering duplicate assembly redirect: {files.ElementAt(i)} -> {asm.Location}");
+                        }
+                    }
+                }
+                continue;
+            }
+
+            var addedAsm = set.AddAssembly(mod.Name, friendlyName, null, asm);
 
             if (name.EndsWith("DataAssembly"))
                 addedAsm.AllowPatches = false;

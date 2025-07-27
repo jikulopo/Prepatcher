@@ -19,12 +19,12 @@ internal static class AssemblyCollector
                 Select(asmPath => ($"(System) {Path.GetFileName(asmPath)}", asmPath));
     }
 
-    internal static IEnumerable<(string, string, Assembly)> ModAssemblies()
+    internal static IEnumerable<(ModContentPack, string, Assembly)> ModAssemblies()
     {
         foreach (var (mod, modAssembly) in GetModAssemblies())
         {
             var name = modAssembly.GetName().Name;
-            yield return (mod.Name, $"(mod {mod.PackageIdPlayerFacing}) {name}", modAssembly);
+            yield return (mod, $"(mod {mod.PackageIdPlayerFacing}) {name}", modAssembly);
         }
     }
 
