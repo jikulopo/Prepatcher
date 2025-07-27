@@ -34,8 +34,8 @@ public static class AssemblyLoadingFreePatch
         {
             return loadedAssembly;
         }
-
-        var rawAssembly = File.ReadAllBytes(filePath);
+        return Assembly.LoadFrom(filePath);
+        /*var rawAssembly = File.ReadAllBytes(filePath);
 
         var fileInfo = new FileInfo(Path.Combine(Path.GetDirectoryName(filePath)!, Path.GetFileNameWithoutExtension(filePath)) + ".pdb");
         if (fileInfo.Exists)
@@ -46,6 +46,6 @@ public static class AssemblyLoadingFreePatch
         else
         {
             return AppDomain.CurrentDomain.Load(rawAssembly);
-        }
+        }*/
     }
 }
