@@ -38,6 +38,12 @@ internal static partial class HarmonyPatches
         );
     }
 
+    internal static void UnPatchGUI()
+    {
+        harmony.Unpatch(AccessTools.Method(typeof(GUIUtility), "GetControlID", new[] { typeof(int), typeof(FocusType), typeof(Rect) }), HarmonyPatchType.Postfix);
+        harmony.Unpatch(AccessTools.Method(typeof(LongEventHandler), nameof(LongEventHandler.DrawLongEventWindowContents)), HarmonyPatchType.Prefix);
+    }
+
     private static bool parsingXML;
 
     private static void PrefixParseXML()

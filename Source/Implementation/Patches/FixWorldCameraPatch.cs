@@ -25,6 +25,8 @@ public static class FixWorldCameraPatch
         HarmonyPatches.harmony.Unpatch(typeof(WorldRenderer).GetMethod("CheckActivateWorldCamera"),
             HarmonyPatchType.Prefix
             );
+        HarmonyPatches.UnSilenceLogging();
+        HarmonyPatches.UnPatchGUI();
         //Lg.Info("UnPatched");
     }
 

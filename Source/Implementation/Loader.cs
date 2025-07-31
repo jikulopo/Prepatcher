@@ -85,7 +85,7 @@ internal static class Loader
                         if (i != -1)
                         {
                             DataStore.duplicateAssemblies[files.ElementAt(i)] = asm.Location;
-                            Lg.Info($"Registering duplicate assembly redirect: {files.ElementAt(i)} -> {asm.Location}");
+                            Lg.Verbose($"Registering duplicate assembly redirect: {files.ElementAt(i)} -> {asm.Location}");
                         }
                     }
                 }
@@ -135,7 +135,6 @@ internal static class Loader
         }
 
         DataStore.assemblies.Add(asm.SourceAssembly!.Location,loadedAssembly);
-        Lg.Info(asm.SourceAssembly!.Location);
 
 
         if (GenCommandLine.TryGetCommandLineArg("dumpasms", out var path) && !path.Trim().NullOrEmpty())
