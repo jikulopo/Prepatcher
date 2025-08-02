@@ -70,6 +70,8 @@ public static class FixWorldCameraPatch
     {
         //ai generated because lazy
         bool modified = false;
+        string newNameOnly = newFullName.Split('.').Last();
+        string newNamespace = newFullName.Replace("." + newNameOnly, "");
 
         foreach (var method in type.Methods)
         {
@@ -79,18 +81,81 @@ public static class FixWorldCameraPatch
             {
                 if (instr.Operand is MethodReference mr && mr.DeclaringType.FullName == oldFullName)
                 {
-                    mr.DeclaringType.Name = newFullName.Split('.').Last();
+                    mr.DeclaringType.Name = newNameOnly;
                     modified = true;
                 }
                 else if (instr.Operand is FieldReference fr && fr.DeclaringType.FullName == oldFullName)
                 {
-                    fr.DeclaringType.Name = newFullName.Split('.').Last();
+                    fr.DeclaringType.Name = newNameOnly;
                     modified = true;
                 }
                 else if (instr.Operand is TypeReference tr && tr.FullName == oldFullName)
                 {
-                    tr.Name = newFullName.Split('.').Last();
+                    tr.Name = newNameOnly;
                     modified = true;
+                }
+            }
+
+
+        }
+
+        foreach (var member in type.Methods.Cast<ICustomAttributeProvider>()
+                     .Concat(type.Fields)
+                     .Concat(type.Properties)
+                     .Concat(type.Events)
+                     .Concat(new[] { type }))
+        {
+            if (!member.HasCustomAttributes) continue;
+
+            foreach (var attr in member.CustomAttributes)
+            {
+                if (attr.AttributeType.FullName == oldFullName)
+                {
+                    attr.AttributeType.Name = newNameOnly;
+                    modified = true;
+                }
+
+                // Handle constructor arguments and named arguments if they reference the type
+                for (int i = 0; i < attr.ConstructorArguments.size; i++)
+                {
+                    var arg = attr.ConstructorArguments.ElementAt(i);
+
+                    if (arg.Type.FullName == oldFullName)
+                    {
+                        arg = new CustomAttributeArgument(
+                            new TypeReference(newNamespace, newNameOnly, type.Resolve().Module, arg.Type.Scope),
+                            arg.Value
+                        );
+                        attr.ConstructorArguments.RemoveAt(i);
+                        attr.ConstructorArguments.Insert(i, arg);
+                        modified = true;
+                    }
+                    else if (arg.Value is TypeReference tr && tr.FullName == oldFullName)
+                    {
+                        var newTypeRef = new TypeReference(newNamespace, newNameOnly, tr.Resolve().module, tr.Scope);
+                        arg = new CustomAttributeArgument(arg.Type, newTypeRef);
+                        attr.ConstructorArguments.RemoveAt(i);
+                        attr.ConstructorArguments.Insert(i, arg);
+                        modified = true;
+                    }
+                }
+
+                foreach (var namedArg in attr.Properties)
+                {
+                    if (namedArg.Argument.Type.FullName == oldFullName)
+                    {
+                        namedArg.Argument.Type.Name = newNameOnly;
+                        modified = true;
+                    }
+                }
+
+                foreach (var namedArg in attr.Fields)
+                {
+                    if (namedArg.Argument.Type.FullName == oldFullName)
+                    {
+                        namedArg.Argument.Type.Name = newNameOnly;
+                        modified = true;
+                    }
                 }
             }
         }
