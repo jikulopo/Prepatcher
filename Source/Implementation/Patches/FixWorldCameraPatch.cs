@@ -4,6 +4,7 @@ using Mono.Cecil;
 using Mono.Cecil.Cil;
 using Mono.Cecil.Rocks;
 using Mono.Collections.Generic;
+using RimWorld;
 using RimWorld.Planet;
 
 namespace Prepatcher;
@@ -15,6 +16,8 @@ public static class FixWorldCameraPatch
     {
         HarmonyPatches.harmony.Patch(typeof(WorldRenderer).GetMethod("CheckActivateWorldCamera"),
             prefix: new HarmonyMethod(typeof(FixWorldCameraPatch), nameof(CreateWorldCamera)));
+        HarmonyPatches.harmony.Patch(typeof(WorldInterface).GetMethod("Reset"),
+            prefix: new HarmonyMethod(typeof(FixWorldCameraPatch), nameof(CreateWorldCamera)));
     }
 
     private static void CreateWorldCamera()
@@ -22,9 +25,12 @@ public static class FixWorldCameraPatch
         WorldCameraManager.worldCameraInt = WorldCameraManager.CreateWorldCamera();
         WorldCameraManager.worldSkyboxCameraInt = WorldCameraManager.CreateWorldSkyboxCamera(WorldCameraManager.worldCameraInt);
         WorldCameraManager.worldCameraDriverInt = WorldCameraManager.worldCameraInt.GetComponent<WorldCameraDriver>();
-        HarmonyPatches.harmony.Unpatch(typeof(WorldRenderer).GetMethod("CheckActivateWorldCamera"),
+        HarmonyPatches.harmony.Unpatch(typeof(WorldInterface).GetMethod("Reset"),
             HarmonyPatchType.Prefix
             );
+        HarmonyPatches.harmony.Unpatch(typeof(WorldRenderer).GetMethod("CheckActivateWorldCamera"),
+            HarmonyPatchType.Prefix
+        );
         HarmonyPatches.UnSilenceLogging();
         HarmonyPatches.UnPatchGUI();
         //Lg.Info("UnPatched");
