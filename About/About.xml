@@ -1,14 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
 <ModMetaData>
-  <packageId>zetrith.prepatcher</packageId>
+  <packageId>jikulopo.prepatcher</packageId>
   <name>Prepatcher</name>
   <supportedVersions>
     <li>1.4</li>
     <li>1.5</li>
     <li>1.6</li>
   </supportedVersions>
-  <author>Zetrith</author>
-  <url>https://github.com/Zetrith/Prepatcher</url>
+  <author>Zetrith, jikulopo</author>
+  <url>https://github.com/jikulopo/Prepatcher</url>
   <loadBefore>
 	<li>Ludeon.RimWorld</li>
 	<li>brrainz.harmony</li>
