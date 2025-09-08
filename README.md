@@ -3,7 +3,7 @@
 
 Structured assembly rewriting library/mod for RimWorld
 
-Workshop: https://steamcommunity.com/sharedfiles/filedetails/?id=2934420800
+Workshop: https://steamcommunity.com/sharedfiles/filedetails/?id=3563469557
 
 The project has three main logical components:
 - **Assembly rewriter** - in principle platform-agnostic
@@ -39,7 +39,7 @@ To make a RimWorld mod correctly depend on Prepatcher, put this in `About.xml`:
 ```xml
 <modDependencies>
     <li>
-        <packageId>zetrith.prepatcher</packageId>
+        <packageId>jikulopo.prepatcher</packageId>
         <displayName>Prepatcher</displayName>
         <steamWorkshopUrl>steam://url/CommunityFilePage/2934420800</steamWorkshopUrl>
         <downloadUrl>https://github.com/Zetrith/Prepatcher/releases/latest</downloadUrl>
