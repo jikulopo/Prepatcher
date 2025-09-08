@@ -1,39 +1,23 @@
 ﻿using System.Linq;
-using HarmonyLib;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
 using Mono.Cecil.Rocks;
 using Mono.Collections.Generic;
-using RimWorld;
 using RimWorld.Planet;
+using Verse;
 
 namespace Prepatcher;
 
 public static class FixWorldCameraPatch
 {
-
-    public static void PrefixCheckActivateWorldCamera()
+    public static void CreateWorldCamera()
     {
-        HarmonyPatches.harmony.Patch(typeof(WorldRenderer).GetMethod("CheckActivateWorldCamera"),
-            prefix: new HarmonyMethod(typeof(FixWorldCameraPatch), nameof(CreateWorldCamera)));
-        HarmonyPatches.harmony.Patch(typeof(WorldInterface).GetMethod("Reset"),
-            prefix: new HarmonyMethod(typeof(FixWorldCameraPatch), nameof(CreateWorldCamera)));
-    }
-
-    private static void CreateWorldCamera()
-    {
+        Lg.Verbose("Creating replaced World Camera");
         WorldCameraManager.worldCameraInt = WorldCameraManager.CreateWorldCamera();
         WorldCameraManager.worldSkyboxCameraInt = WorldCameraManager.CreateWorldSkyboxCamera(WorldCameraManager.worldCameraInt);
         WorldCameraManager.worldCameraDriverInt = WorldCameraManager.worldCameraInt.GetComponent<WorldCameraDriver>();
-        HarmonyPatches.harmony.Unpatch(typeof(WorldInterface).GetMethod("Reset"),
-            HarmonyPatchType.Prefix
-            );
-        HarmonyPatches.harmony.Unpatch(typeof(WorldRenderer).GetMethod("CheckActivateWorldCamera"),
-            HarmonyPatchType.Prefix
-        );
         HarmonyPatches.UnSilenceLogging();
         HarmonyPatches.UnPatchGUI();
-        //Lg.Info("UnPatched");
     }
 
     [FreePatch]
@@ -50,6 +34,8 @@ public static class FixWorldCameraPatch
                 inst.OpCode = OpCodes.Ret;
                 inst.Operand = null;
                 done = true;
+                var log = Instruction.Create(OpCodes.Call,module.ImportReference(typeof(FixWorldCameraPatch).GetMethod(nameof(activated))));
+                instructions.Add(log);
                 instructions.Add(inst);
             }
             if(!done)instructions.Add(inst);
@@ -62,6 +48,10 @@ public static class FixWorldCameraPatch
         }*/
     }
 
+    public static void activated()
+    {
+        Log.Message("Not initializing WorldCamera");
+    }
     [FreePatchAll]
     public static bool RenameWorldCamera(ModuleDefinition module)
     {

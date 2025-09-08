@@ -11,7 +11,8 @@ public partial class ModManager
         {
             ModsConfig.SetActiveToList(active.ToList());
             ModsConfig.Save();
-            PrestarterInit.DoLoad();
+            GenCommandLine.Restart();
+            // PrestarterInit.DoLoad();
         }, "", true, null, false);
     }
 }
