@@ -21,11 +21,6 @@ internal static partial class HarmonyPatches
         );
     }
 
-    internal static void UnSilenceLogging()
-    {
-        harmony.Unpatch(typeof(Log).GetMethod("Error", new[] { typeof(string) }), HarmonyPatchType.Prefix);
-        harmony.Unpatch(typeof(Log).GetMethod("Warning", new[] { typeof(string) }), HarmonyPatchType.Prefix);
-    }
     private static bool LogErrorPrefix(string text)
     {
         return !text.Contains("ThreadAbortException");

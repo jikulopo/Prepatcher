@@ -1,6 +1,9 @@
 ﻿using System.IO;
 using System.Reflection;
 using Mono.Cecil;
+using Mono.Cecil.Cil;
+using Mono.Cecil.Pdb;
+using Verse;
 
 namespace Prepatcher.Process;
 
@@ -21,31 +24,101 @@ public class ModifiableAssembly
     public byte[]? Bytes { get; private set; }
     private byte[]? RawBytes { get; }
 
+    public string SourceLocation { get; set; }
+
     private bool needsReload;
 
-    public ModifiableAssembly(string ownerName, string friendlyName, Assembly sourceAssembly, IAssemblyResolver resolver)
+    public bool symbolsLoaded = false;
+
+    public byte[]? SymbolBytes { get; private set; }
+
+    public ModifiableAssembly(string ownerName, string friendlyName, Assembly sourceAssembly,
+        IAssemblyResolver resolver)
     {
         OwnerName = ownerName;
         FriendlyName = friendlyName;
         SourceAssembly = sourceAssembly;
-
+        SourceLocation = sourceAssembly.Location;
         RawBytes = UnsafeAssembly.GetRawData(sourceAssembly);
-        AsmDefinition = AssemblyDefinition.ReadAssembly(
-            new MemoryStream(RawBytes),
-            new ReaderParameters
+        if (sourceAssembly.Location != "")
+        {
+            try
             {
-                AssemblyResolver = resolver
-            });
+                AsmDefinition = AssemblyDefinition.ReadAssembly(sourceAssembly.Location, new ReaderParameters
+                {
+                    AssemblyResolver = resolver,
+                    ReadSymbols = true,
+                    InMemory = true
+                });
+                symbolsLoaded = true;
+                CheckSymbols();
+
+
+            }
+            catch (Exception e)
+            {
+                AsmDefinition = AssemblyDefinition.ReadAssembly(sourceAssembly.Location, new ReaderParameters
+                {
+                    AssemblyResolver = resolver,
+                    ReadSymbols = false,
+                    InMemory = true
+                });
+            }
+        }
+        else
+        {
+            try
+            {
+                AsmDefinition = AssemblyDefinition.ReadAssembly(
+                    new MemoryStream(RawBytes),
+                    new ReaderParameters
+                    {
+                        AssemblyResolver = resolver,
+                        ReadSymbols = true,
+                    });
+                symbolsLoaded = true;
+               CheckSymbols();
+            }
+            catch (Exception e)
+            {
+                AsmDefinition = AssemblyDefinition.ReadAssembly(
+                    new MemoryStream(RawBytes),
+                    new ReaderParameters
+                    {
+                        AssemblyResolver = resolver,
+                    });
+            }
+
+        }
     }
 
     public ModifiableAssembly(string ownerName, string friendlyName, string path, IAssemblyResolver resolver)
     {
         OwnerName = ownerName;
         FriendlyName = friendlyName;
-        AsmDefinition = AssemblyDefinition.ReadAssembly(
-            path,
-            new ReaderParameters { AssemblyResolver = resolver, InMemory = true }
-        );
+        try
+        {
+            AsmDefinition = AssemblyDefinition.ReadAssembly(path, new ReaderParameters
+            {
+                AssemblyResolver = resolver,
+                ReadSymbols = true,
+                InMemory = true
+            });
+            symbolsLoaded = true;
+            CheckSymbols();
+
+
+        }
+        catch (Exception e)
+        {
+            AsmDefinition = AssemblyDefinition.ReadAssembly(path, new ReaderParameters
+            {
+                AssemblyResolver = resolver,
+                ReadSymbols = false,
+                InMemory = true
+            });
+        }
+        SourceLocation = path;
     }
 
     public void SerializeToByteArray()
@@ -59,8 +132,26 @@ public class ModifiableAssembly
 
         Lg.Verbose($"Serializing: {FriendlyName}");
         var stream = new MemoryStream();
-        AsmDefinition.Write(stream);
+        if (symbolsLoaded)
+        {
+            Lg.Verbose($"Serializing assembly with symbols loaded: {FriendlyName} {AsmDefinition.MainModule.symbol_reader.ToString()}");
+            var symbolsStream = new MemoryStream();
+            AsmDefinition.Write(stream,
+                new WriterParameters
+                {
+                    SymbolStream = symbolsStream,
+                    SymbolWriterProvider = new PdbWriterProvider()
+                });
+            SymbolBytes = symbolsStream.ToArray();
+
+        }
+        else
+        {
+            AsmDefinition.Write(stream);
+        }
+
         Bytes = stream.ToArray();
+
     }
 
     public void SetSourceRefOnly()
@@ -77,5 +168,31 @@ public class ModifiableAssembly
     public override string ToString()
     {
         return FriendlyName;
+    }
+
+    private void CheckSymbols()
+    {
+        if (AsmDefinition.MainModule.symbol_reader is EmbeddedPortablePdbReader mainEmbedded)
+        {
+            AsmDefinition.MainModule.symbol_reader = mainEmbedded.reader;
+
+        }
+
+        if (!AsmDefinition.Modules.NullOrEmpty())
+        {
+            foreach (var module in AsmDefinition.Modules)
+            {
+                if (module.symbol_reader is EmbeddedPortablePdbReader embedded)
+                {
+                    module.symbol_reader = embedded.reader;
+                }
+            }
+        }
+
+
+        if (AsmDefinition.MainModule.symbol_reader is NativePdbReader)
+        {
+            symbolsLoaded = false;
+        }
     }
 }

@@ -16,7 +16,6 @@ public static class FixWorldCameraPatch
         WorldCameraManager.worldCameraInt = WorldCameraManager.CreateWorldCamera();
         WorldCameraManager.worldSkyboxCameraInt = WorldCameraManager.CreateWorldSkyboxCamera(WorldCameraManager.worldCameraInt);
         WorldCameraManager.worldCameraDriverInt = WorldCameraManager.worldCameraInt.GetComponent<WorldCameraDriver>();
-        HarmonyPatches.UnSilenceLogging();
         HarmonyPatches.UnPatchGUI();
     }
 
@@ -50,14 +49,15 @@ public static class FixWorldCameraPatch
 
     public static void activated()
     {
-        Log.Message("Not initializing WorldCamera");
+        Lg.Verbose("Not initializing WorldCamera");
     }
+
     [FreePatchAll]
     public static bool RenameWorldCamera(ModuleDefinition module)
     {
         bool res= UpdateModuleReferences(module,"RimWorld.Planet.WorldCameraDriver","RimWorld.Planet.WorldCameraDriverReplaced");
         if(res)
-            Lg.Info($"Renamed type RimWorld.Planet.WorldCameraDriver to RimWorld.Planet.WorldCameraDriverReplaced in assembly {module.Name}");
+            Lg.Verbose($"Renamed type RimWorld.Planet.WorldCameraDriver to RimWorld.Planet.WorldCameraDriverReplaced in assembly {module.Name}");
         return res;
 
     }

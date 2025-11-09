@@ -67,29 +67,56 @@ internal static class Loader
             var name = asm.GetName().Name;
 
             // Don't add system assemblies packaged by mods
+            // Find original locations of loadFrom deduplicated assemblies
+            var location = asm.Location;
             if (set.HasAssembly(name))
             {
-                var files = ModContentPack.GetAllFilesForModPreserveOrder(mod, "Assemblies/", (string e) => e.ToLower() == ".dll",
-                    null).Select(f => f.Item2.ToString());
-                //Lg.Info(files.Join());
-                //Lg.Info(mod.assemblies.loadedAssemblies.Select(ass => ass.Location).Join());
-                if(!files.Contains(asm.Location))
+                location = GetAssemblyPath(mod, asm);
+                if (location != "")
                 {
-                    //Lg.Info($"Detected duplicate assembly: {asm.Location}");
-
-                    if (files.Count() == mod.assemblies.loadedAssemblies.Count)
+                    if (asm.Location != "")
                     {
-                        var merged = files.Zip(mod.assemblies.loadedAssemblies,
-                            (x, y) => new Tuple<string, string>(x, y.Location));
-                        var i = mod.assemblies.loadedAssemblies.FindIndex(x => x.Location == asm.Location);
-                        if (i != -1)
-                        {
-                            DataStore.duplicateAssemblies[files.ElementAt(i)] = asm.Location;
-                            Lg.Verbose($"Registering duplicate assembly redirect: {files.ElementAt(i)} -> {asm.Location}");
-                        }
+                        DataStore.duplicateAssemblies[location] = asm.Location;
+                        Lg.Verbose($"Registering duplicate assembly redirect: {location} -> {asm.Location}");
                     }
+                    else
+                    {
+                        var orgAsm = set.nameToAsm[name];
+                        DataStore.duplicateAssemblies[location] = orgAsm.SourceLocation;
+                        Lg.Verbose($"Registering duplicate assembly redirect: {location} -> {orgAsm.SourceLocation}");
+                    }
+
                 }
+                else
+                {
+                    Lg.Error($"Duplicate Assembly not found: {friendlyName}");
+                }
+
                 continue;
+            }
+
+
+            // Try to find if assembly is duplicate of already loaded one(eg. by doorstop)
+            if (location == "")
+            {
+                var ass = AppDomain.CurrentDomain.GetAssemblies()
+                    .FirstOrDefault(a => a.GetName().Name == name && a.Location != "");
+                location=GetAssemblyPath(mod, asm);
+                if (ass != null)
+                {
+                    var firstAsm = set.AddAssembly(mod.Name, friendlyName, null, ass);
+                    firstAsm.ProcessAttributes = true;
+                    Reloader.setRefonly.Add(asm);
+                    DataStore.duplicateAssemblies[location] = ass.Location;
+                    Lg.Verbose($"Registering duplicate assembly redirect: {location} -> {ass.Location}");
+                    continue;
+                }
+                else
+                {
+                    Lg.Verbose($"No copy of assembly has Location set: {friendlyName}");
+                }
+
+
             }
 
             var addedAsm = set.AddAssembly(mod.Name, friendlyName, null, asm);
@@ -98,6 +125,7 @@ internal static class Loader
                 addedAsm.AllowPatches = false;
             else
                 addedAsm.ProcessAttributes = true;
+            addedAsm.SourceLocation = location;
         }
 
         using (StopwatchScope.Measure("Game processing"))
@@ -126,15 +154,25 @@ internal static class Loader
     private static void LoadAssembly(ModifiableAssembly asm)
     {
         Lg.Verbose($"Loading assembly: {asm}");
+        Assembly loadedAssembly;
+        if (asm.symbolsLoaded)
+        {
+            Lg.Verbose($"Loading assembly with symbols: {asm}: ");
+            loadedAssembly = Assembly.Load(asm.Bytes, asm.SymbolBytes);
+        }
+        else
+        {
+            loadedAssembly = Assembly.Load(asm.Bytes);
+        }
 
-        var loadedAssembly = Assembly.Load(asm.Bytes);
+
         if (loadedAssembly.GetName().Name == AssemblyCollector.AssemblyCSharp)
         {
             newAsm = loadedAssembly;
             AppDomain.CurrentDomain.AssemblyResolve += (_, _) => loadedAssembly;
         }
 
-        DataStore.assemblies.Add(asm.SourceAssembly!.Location,loadedAssembly);
+        DataStore.assemblies.Add(asm.SourceLocation,loadedAssembly);
 
 
         if (GenCommandLine.TryGetCommandLineArg("dumpasms", out var path) && !path.Trim().NullOrEmpty())
@@ -188,5 +226,41 @@ internal static class Loader
         }
 
         asmResolve.SetValue(AppDomain.CurrentDomain, null);
+    }
+
+    //finds original assembly location
+    //loadFrom deduplicates assemblies, asm.Location might be location of the first assembly loaded of given identity instead of actual location
+    //in case of non loadFrom assemblies which dont have a location tries to find the original location based on order of loaded assemblies/by manually checking the assembly names
+    private static string GetAssemblyPath(ModContentPack mod, Assembly asm)
+    {
+        var files = ModContentPack.GetAllFilesForModPreserveOrder(mod, "Assemblies/", (string e) => e.ToLower() == ".dll",
+            null).Select(f => f.Item2.ToString()).ToList();
+        if (files.Contains(asm.Location))
+            return asm.Location;
+        if (files.Count() != mod.assemblies.loadedAssemblies.Count)
+        {
+            Lg.Error($"Mod: {mod.Name} has assemblies that arent loaded");
+            foreach (string file in files)
+            {
+                try
+                {
+                    var a = AssemblyName.GetAssemblyName(file);
+                    if (a?.FullName == asm.FullName) return file;
+                }
+                catch (Exception)
+                {
+                    Lg.Error($"Mod: {mod.Name} failed to compare assembly name of location: {file}");
+                }
+
+            }
+
+            return "";
+        }
+        var i = mod.assemblies.loadedAssemblies.FindIndex(x => x.FullName == asm.FullName);
+        if (i != -1)
+        {
+            return files.ElementAt(i);
+        }
+        return "";
     }
 }
