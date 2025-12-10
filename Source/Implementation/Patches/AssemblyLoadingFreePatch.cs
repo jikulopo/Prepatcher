@@ -23,29 +23,27 @@ public static class AssemblyLoadingFreePatch
 
     public static Assembly LoadFile(string filePath)
     {
-        //FileLog.Log($"loadFile path: {filePath}");
         if (DataStore.duplicateAssemblies.TryGetValue(filePath, out string? assemblyPath))
         {
-            //FileLog.Log($"Loading assembly from redirected: {filePath} -> {assemblyPath}");
+            Lg.Verbose($"Loading assembly from redirected: {filePath} -> {assemblyPath}");
             filePath=assemblyPath;
         }
 
         if (DataStore.assemblies.TryGetValue(filePath, out Assembly? loadedAssembly))
         {
+            Lg.Verbose($"Returning prepatcher loaded assembly: {filePath}");
             return loadedAssembly;
         }
-        return Assembly.LoadFrom(filePath);
-        /*var rawAssembly = File.ReadAllBytes(filePath);
-
-        var fileInfo = new FileInfo(Path.Combine(Path.GetDirectoryName(filePath)!, Path.GetFileNameWithoutExtension(filePath)) + ".pdb");
-        if (fileInfo.Exists)
+        Lg.Verbose($"using loadFrom on non modified asm: {filePath}");
+        var asm = Assembly.LoadFrom(filePath);
+        filePath=asm.Location;
+        if (DataStore.assemblies.TryGetValue(filePath, out Assembly? loadedAssembly2))
         {
-            var rawSymbolStore = File.ReadAllBytes(fileInfo.FullName);
-            return AppDomain.CurrentDomain.Load(rawAssembly, rawSymbolStore);
+            Lg.Verbose($"Returning prepatcher loaded assembly after loadFrom: {filePath}");
+            return loadedAssembly2;
         }
-        else
-        {
-            return AppDomain.CurrentDomain.Load(rawAssembly);
-        }*/
+        return asm;
+
+
     }
 }
