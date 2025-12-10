@@ -77,13 +77,13 @@ internal static class Loader
                     if (asm.Location != "")
                     {
                         DataStore.duplicateAssemblies[location] = asm.Location;
-                        Lg.Verbose($"Registering duplicate assembly redirect: {location} -> {asm.Location}");
+                        Lg.Verbose($"Registering duplicate assembly redirect directly: {location} -> {asm.Location}");
                     }
                     else
                     {
                         var orgAsm = set.nameToAsm[name];
                         DataStore.duplicateAssemblies[location] = orgAsm.SourceLocation;
-                        Lg.Verbose($"Registering duplicate assembly redirect: {location} -> {orgAsm.SourceLocation}");
+                        Lg.Verbose($"Registering duplicate assembly redirect after search: {location} -> {orgAsm.SourceLocation}");
                     }
 
                 }
