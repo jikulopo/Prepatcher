@@ -6,7 +6,9 @@
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
     <OutputPath>..\Assemblies\</OutputPath>
-    <DebugType>None</DebugType>
+    <DebugType>embedded</DebugType>
+    <DebugSymbols>true</DebugSymbols>
+    <Optimize>true</Optimize>
     <ReleaseVersion>0.4.8</ReleaseVersion>
     <PublicizeAsReferenceAssemblies>false</PublicizeAsReferenceAssemblies>
   </PropertyGroup>

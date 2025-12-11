@@ -19,5 +19,6 @@ Includes Harmony v2.4.1 and PrepatcherAPI v1.2.0
 
 The version for RimWorld 1.4 includes Harmony v2.2.2 and PrepatcherAPI v1.2.0
 The version for RimWorld 1.5 includes Harmony v2.3.3 and PrepatcherAPI v1.2.0
-</description>
+  </description>
+  <modVersion IgnoreIfNoMatchingField="True">1.3.0</modVersion>
 </ModMetaData>
