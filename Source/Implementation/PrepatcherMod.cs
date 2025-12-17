@@ -10,7 +10,7 @@ namespace Prepatcher;
 internal class PrepatcherMod : Mod
 {
 
-    internal const string PrepatcherModId = "zetrith.prepatcher";
+    internal const string PrepatcherModId = "jikulopo.prepatcher";
     internal const string HarmonyModId = "brrainz.harmony";
 
     public PrepatcherMod(ModContentPack content) : base(content)
