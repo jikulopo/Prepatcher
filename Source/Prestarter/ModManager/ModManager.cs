@@ -157,6 +157,10 @@ public partial class ModManager
         }
         Layouter.EndHorizontal();
 
+        if (active.Count == 0)
+        {
+            SetActive(new List<string>());
+        }
         Layouter.BeginHorizontal();
         {
             // Mod list drawing has to be postponed because its button count varies depending on layout
@@ -241,8 +245,8 @@ public partial class ModManager
 
         active = new UniqueList<string>(newActive);
 
-        if (!ModIsActiveNoPostfix("zetrith.prepatcher"))
-            active.InsertRange(0, new[] { "zetrith.prepatcher" });
+        if (!ModIsActiveNoPostfix("jikulopo.prepatcher"))
+            active.InsertRange(0, new[] { "jikulopo.prepatcher" });
 
         if (!ModIsActiveNoPostfix("ludeon.rimworld"))
             active.InsertRange(0, new[] { "ludeon.rimworld" });

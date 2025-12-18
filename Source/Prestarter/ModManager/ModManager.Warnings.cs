@@ -77,7 +77,7 @@ public partial class ModManager
         {
             return ModIsActiveNoPostfix(dep.packageId) ||
                    dep.packageId.ToLowerInvariant() == "brrainz.harmony" &&
-                   ModIsActiveNoPostfix("zetrith.prepatcher");
+                   ModIsActiveNoPostfix("jikulopo.prepatcher");
         }
 
         return modData.Dependencies
