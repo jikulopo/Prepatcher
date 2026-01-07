@@ -74,7 +74,7 @@ internal static class Loader
                 location = GetAssemblyPath(mod, asm);
                 if (location != "")
                 {
-                    if (asm.Location != "")
+                    if (asm.Location != "" && asm.Location != location)
                     {
                         DataStore.duplicateAssemblies[location] = asm.Location;
                         Lg.Verbose($"Registering duplicate assembly redirect directly: {location} -> {asm.Location}");

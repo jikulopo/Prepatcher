@@ -41,10 +41,6 @@ public static class FixWorldCameraPatch
 
         }
         method.Body.instructions =  instructions;
-        /*foreach (var inst in method.Body.Instructions)
-        {
-            Lg.Info(inst);
-        }*/
     }
 
     public static void activated()

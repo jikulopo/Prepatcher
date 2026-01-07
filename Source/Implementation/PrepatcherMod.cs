@@ -15,6 +15,8 @@ internal class PrepatcherMod : Mod
 
     public PrepatcherMod(ModContentPack content) : base(content)
     {
+        if(!DataStore.startedOnce)
+            Lg.Info($"Starting... (vanilla load took {Time.realtimeSinceStartup}s)");
         HarmonyPatches.PatchModLoading();
         HarmonyPatches.AddVerboseProfiling();
         HarmonyPatches.PatchGUI();
@@ -23,6 +25,18 @@ internal class PrepatcherMod : Mod
 
         if (DataStore.startedOnce)
         {
+            foreach (var log in DataStore.logsToPass)
+            {
+                if (log.Item1 == "info")
+                {
+                    Lg.Info($"Before reload: {log.Item2}");
+                }
+                else
+                {
+                    Lg.Error($"Before reload: {log.Item2}");
+                }
+            }
+            DataStore.logsToPass.Clear();
             AppDomain.CurrentDomain.ReflectionOnlyAssemblyResolve += (sender, args) =>
             {
                 Lg.Verbose($"ReflectionOnlyAssemblyResolve: {args.RequestingAssembly} requested {args.Name}");
@@ -33,14 +47,9 @@ internal class PrepatcherMod : Mod
             return;
         }
 
-        // EditWindow_Log.wantsToOpen = false;
-
-        DataStore.startedOnce = true;
-        Lg.Info($"Starting... (vanilla load took {Time.realtimeSinceStartup}s)");
-
         HarmonyPatches.SilenceLogging();
         Loader.Reload();
-
+        DataStore.startedOnce = true;
         // Thread abortion counts as a crash
         Prefs.data.resetModsConfigOnCrash = false;
 

@@ -4,7 +4,6 @@
 using System;
 using System.Collections.Generic;
 using System.Reflection;
-
 namespace DataAssembly;
 
 public static class DataStore
@@ -15,5 +14,6 @@ public static class DataStore
     public static volatile string? loadingStage = null;
     public static Dictionary<string,Assembly> assemblies = new();
     public static Dictionary<string,string> duplicateAssemblies = new();
+    public static List<ValueTuple<string,object>> logsToPass = new();
 
 }

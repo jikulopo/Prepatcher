@@ -157,6 +157,12 @@ public class ModifiableAssembly
     public void SetSourceRefOnly()
     {
         Lg.Verbose($"Setting refonly: {FriendlyName}");
+        //try to handle asmCSharp dependent assemblies getting inserted into RWs assemblies
+        if (SourceAssembly == null && !SourceLocation.NullOrEmpty())
+        {
+            Lg.Error($"Attempting to LoadFrom missing assembly: {FriendlyName} from {SourceLocation} - is this correct assembly/location?");
+            SourceAssembly = Assembly.LoadFrom(SourceLocation);
+        }
         UnsafeAssembly.SetReflectionOnly(SourceAssembly!, true);
     }
 
