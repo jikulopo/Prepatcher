@@ -79,8 +79,22 @@ internal static class FreePatcher
 
     private static IEnumerable<MethodInfo> FindAllFreePatches(Assembly patcherAsm)
     {
+        Type[] types;
+        try
+        {
+            types = patcherAsm.GetTypes();
+        }
+        catch (ReflectionTypeLoadException e)
+        {
+            types = e.Types;
+            foreach (var le in e.LoaderExceptions)
+            {
+                Lg.Error($"FindAllFreePatches encountered a Type that failed to load: {le}");
+            }
+        }
+
         return
-            from type in patcherAsm.GetTypes()
+            from type in types
             where AccessTools.IsStatic(type)
             from m in AccessTools.GetDeclaredMethods(type)
             where IsDefinedSafe<FreePatchAttribute>(m) || IsDefinedSafe<FreePatchAllAttribute>(m)
