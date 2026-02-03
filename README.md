@@ -58,3 +58,8 @@ For more details and features, see https://github.com/Zetrith/Prepatcher/wiki
 ## Compiling
 Clone anywhere and go to the Source folder. Run `dotnet build` and/or `dotnet test`.
 If you want to run it ingame clone to the Mods folder.
+
+## Acknowledgments
+Thanks to Pardeike for making [Harmony](https://github.com/pardeike/Harmony), 0x0ade for [MonoMod](https://github.com/MonoMod/MonoMod) and jbevain for [Mono.Cecil](https://github.com/jbevain/cecil).
+
+Thanks to [jikulopo](https://github.com/jikulopo) for an early update to RimWorld 1.6.

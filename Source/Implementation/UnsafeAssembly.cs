@@ -8,7 +8,7 @@ namespace Prepatcher;
 
 internal class UnsafeAssembly
 {
-    private static readonly FieldInfo? MonoAssemblyField = AccessTools.Field(typeof(Assembly), "_mono_assembly");
+    private static readonly FieldInfo? MonoAssemblyField = AccessTools.Field(AccessTools.TypeByName("System.Reflection.RuntimeAssembly"), "_mono_assembly");
 
     private static List<Assembly> refOnly = new();
 

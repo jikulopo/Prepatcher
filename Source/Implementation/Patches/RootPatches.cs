@@ -76,10 +76,10 @@ internal static partial class HarmonyPatches
 
             try
             {
-                comp.gameObject.AddComponent(translation);
+                var newComp = comp.gameObject.AddComponent(translation);
                 UnityEngine.Object.Destroy(comp);
 
-                Lg.Verbose($"Recreated {comp} with new type {translation.FullName}");
+                Lg.Verbose($"Recreated {comp} {newComp.GetType().Assembly == Loader.newAsm} with new type {translation.FullName}");
             }
             catch (Exception e)
             {

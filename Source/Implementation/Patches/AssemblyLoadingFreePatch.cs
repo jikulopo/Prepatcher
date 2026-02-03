@@ -1,5 +1,7 @@
 ﻿using System.IO;
+using System.Linq;
 using System.Reflection;
+using HarmonyLib;
 using Mono.Cecil;
 using MonoMod.Utils;
 using Verse;
@@ -15,12 +17,19 @@ public static class AssemblyLoadingFreePatch
         var method = type.FindMethod(nameof(ModAssemblyHandler.ReloadAll));
 
         foreach (var inst in method.Body.Instructions)
-            if (inst.Operand is MethodReference { Name: nameof(Assembly.LoadFile) })
-                inst.Operand = module.ImportReference(typeof(AssemblyLoadingFreePatch).GetMethod(nameof(LoadFile)));
+            if (inst.Operand is MethodReference { Name: nameof(Assembly.LoadFrom) })
+                inst.Operand = module.ImportReference(typeof(AssemblyLoadingFreePatch).GetMethod(nameof(LoadFrom)));
     }
 
-    public static Assembly LoadFile(string filePath)
+    public static Assembly LoadFrom(string filePath)
     {
+        var asmName = AssemblyName.GetAssemblyName(filePath);
+        var asmWithName = AppDomain.CurrentDomain.GetAssemblies()
+            .FirstOrDefault(a => a.GetName().Name == asmName.Name);
+
+        if (asmWithName != null)
+            return asmWithName;
+
         var rawAssembly = File.ReadAllBytes(filePath);
         var fileInfo = new FileInfo(Path.Combine(Path.GetDirectoryName(filePath)!, Path.GetFileNameWithoutExtension(filePath)) + ".pdb");
         if (fileInfo.Exists)
