@@ -6,7 +6,7 @@ cd ..
 
 rm -rf Prepatcher/
 mkdir -p Prepatcher
-cp -r About Assemblies 1.4 LoadFolders.xml Prepatcher/
+cp -r About Assemblies 1.4 1.5 LoadFolders.xml Prepatcher/
 
 # Zip for Github releases
 rm -f Prepatcher.zip
